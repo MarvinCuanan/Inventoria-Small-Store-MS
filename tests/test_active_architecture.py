@@ -9,8 +9,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import core.bootstrap as bootstrap
 from core.domain import Admin, PasswordCredentials, Person, Staff, StockLevel
-from core.errors import DatabaseError, ValidationError
+from core.errors import DatabaseError, PermissionDenied, ValidationError
+from core.database import DatabaseManager
 from core.security import verify_password
+from core.session import SessionManager
 from repositories import (AuditLogRepository, CategoryRepository, ProductRepository, RoleRepository,
                           TransactionRepository, UserRepository)
 
@@ -60,6 +62,24 @@ class DomainTests(unittest.TestCase):
         with self.assertRaises(ValidationError):
             stock.decrease(8)
         self.assertEqual(stock.quantity, 7)
+
+    def test_session_keeps_hash_out_of_user_view_and_uses_role_subclass(self):
+        session = SessionManager()
+        session.start(
+            {"user_id": 4, "username": "staff", "password_hash": "stored-hash", "role": "Staff"},
+            {"transaction.view_own"},
+        )
+        self.assertNotIn("password_hash", session.current_user)
+        self.assertIsInstance(session.person, Staff)
+        self.assertEqual(session.person.visible_records([{"user_id": 4}, {"user_id": 5}]),
+                         [{"user_id": 4}])
+        with self.assertRaises(PermissionDenied):
+            session.require("user.manage")
+        session.end()
+        self.assertIsNone(session.person)
+
+    def test_database_manager_singleton_returns_one_instance(self):
+        self.assertIs(DatabaseManager.get_instance(), DatabaseManager.get_instance())
 
 
 class BootstrapSecurityTests(unittest.TestCase):
