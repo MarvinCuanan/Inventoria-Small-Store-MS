@@ -51,6 +51,7 @@ class DomainTests(unittest.TestCase):
         self.assertEqual(credential.password_hash, "pbkdf-hash")
         with self.assertRaises(AttributeError):
             credential.password_hash = "plaintext"
+        self.assertFalse(credential.verifies("x" * 129))
 
     def test_stock_level_validates_quantity(self):
         stock = StockLevel(8)

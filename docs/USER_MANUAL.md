@@ -25,7 +25,7 @@
    python setup_database.py
    ```
 
-   The setup prompts for an administrator username, full name, and password. Password input is hidden, the password is never printed or written to a file, and it must be at least 12 characters. If importing `database/inventoria_schema.sql` through phpMyAdmin, run this setup command afterward to create the first administrator.
+   The setup prompts for an administrator username, full name, and password. Password input is hidden, the password is never printed or written to a file, and it must be 12-128 characters. If importing `database/inventoria_schema.sql` through phpMyAdmin, run this setup command afterward to create the first administrator.
 5. Launch the application:
 
    ```powershell

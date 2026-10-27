@@ -114,7 +114,7 @@ class SignUpView(_AuthFrame):
         self.confirm = Field(self.form, "Confirm password", secret=True)
         self.confirm.pack(fill="x", pady=(0, 6))
         tk.Label(self.form, text="Use 3-30 letters, numbers, . or _ for the username.\n"
-                                 f"Password: at least {config.MIN_PASSWORD_LENGTH} characters. "
+                                 f"Password: {config.MIN_PASSWORD_LENGTH}-{config.MAX_PASSWORD_LENGTH} characters. "
                                  "New accounts start as Staff.",
                  bg="white", fg=theme.MUTED, font=theme.font(9), justify="left", anchor="w").pack(fill="x", pady=(0, 12))
         Btn(self.form, "Create account", self.submit).pack(fill="x", ipady=4)

@@ -22,7 +22,6 @@ from core.validator import Validator
 from repositories import (AuditLogRepository, CategoryRepository, ProductRepository, RoleRepository,
                           TransactionRepository, UserRepository)
 
-PASSWORD_HINT = f"Password must be at least {config.MIN_PASSWORD_LENGTH} characters."
 USERNAME_HINT = "Username must be 3-30 characters: letters, numbers, dot or underscore."
 
 
@@ -61,8 +60,12 @@ class BaseController:
 
     @staticmethod
     def check_password(password: str, confirm: str) -> None:
-        if len(password) < config.MIN_PASSWORD_LENGTH:
-            raise AppError(PASSWORD_HINT)
+        if not isinstance(password, str) or not isinstance(confirm, str):
+            raise AppError("Password values must be text.")
+        if not config.MIN_PASSWORD_LENGTH <= len(password) <= config.MAX_PASSWORD_LENGTH:
+            raise AppError(
+                f"Password must be {config.MIN_PASSWORD_LENGTH}-{config.MAX_PASSWORD_LENGTH} characters."
+            )
         if not Validator.passwords_match(password, confirm):
             raise AppError("The passwords do not match.")
 
@@ -77,7 +80,7 @@ class AuthController(BaseController):
 
     def register(self, username, password, confirm):
         """Self sign-up. New accounts are always Staff; an Admin can promote them later."""
-        username = (username or "").strip()
+        username = username.strip() if isinstance(username, str) else ""
         if not Validator.is_valid_username(username):
             raise AppError(USERNAME_HINT)
         self.check_password(password, confirm)
@@ -93,8 +96,9 @@ class AuthController(BaseController):
                            cursor=cur, user_id=uid)
 
     def login(self, username, password):
-        username = (username or "").strip()
-        if not username or not password:
+        username = username.strip() if isinstance(username, str) else ""
+        if (not Validator.is_valid_username(username) or not isinstance(password, str) or not password
+                or len(password) > config.MAX_PASSWORD_LENGTH):
             raise AppError("Please enter your username and password.")
         key = username.lower()
         self._check_lockout(key)
@@ -135,8 +139,8 @@ class AuthController(BaseController):
             self.audit.log("UPDATE", "users", user["user_id"], None, {"password": "changed by user"}, cursor=cur)
 
     def change_password_from_login(self, username, current, new, confirm):
-        username = (username or "").strip()
-        if not username:
+        username = username.strip() if isinstance(username, str) else ""
+        if not Validator.is_valid_username(username):
             raise AppError("Enter your username.")
         key = username.lower()
         self._check_lockout(key)

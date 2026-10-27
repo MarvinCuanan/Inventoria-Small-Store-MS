@@ -15,6 +15,7 @@ DB_CONFIG = {
 
 CURRENCY = "₱"
 MIN_PASSWORD_LENGTH = 12
+MAX_PASSWORD_LENGTH = 128
 MAX_LOGIN_ATTEMPTS = 5          # wrong passwords allowed ...
 LOCKOUT_SECONDS = 60            # ... before the username is locked for this long
 MAX_STOCK_MOVEMENT = 100000     # largest quantity for one stock-in / stock-out

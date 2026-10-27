@@ -11,13 +11,15 @@ Python 3 · Tkinter · MySQL/MariaDB (XAMPP).
    python -m pip install -r requirements.txt
    python setup_database.py
    ```
-   Setup creates `inventoria_db`, its tables and permissions. If no Admin exists, it prompts for an administrator username and full name, then asks for a password without displaying or saving it. The password must be at least 12 characters. Answer `y` to load sample products.
+   Setup creates `inventoria_db`, its tables and permissions. If no Admin exists, it prompts for an administrator username and full name, then asks for a password without displaying or saving it. The password must be 12-128 characters. Answer `y` to load sample products.
    If you import `database/inventoria_schema.sql` using phpMyAdmin, run `python setup_database.py` afterward to create the first Admin securely.
 4. Start the app: `python main.py` (or double-click `run_inventoria.bat`).
 
 If your MySQL has a password or another port, edit `DB_CONFIG` in `config.py`.
 
 Run automated tests with `python -m unittest discover -s tests -v`. The suite covers domain rules, repository parameterization/error propagation, validation, authentication and service workflows. The active application is launched by `main.py`; `setup_db.py` is a compatibility entry point to the same setup flow.
+
+The user guide is in [`docs/USER_MANUAL.md`](./docs/USER_MANUAL.md) with Word/PDF exports alongside it. Labeled editable sources for the flowchart, DFDs, UML, and ERD are in [`docs/DESIGN_DOCUMENTS.md`](./docs/DESIGN_DOCUMENTS.md).
 
 ## Product specifications
 Each product needs a **Specification / selling unit**, such as `1 sack (50 kg)`,
@@ -54,7 +56,7 @@ replaces the current database contents and requires a matching database schema;
 make a fresh backup first if you may need to recover the current data.
 
 ## 3. Built-in safeguards
-* Passwords are salted PBKDF2-HMAC-SHA256 hashes; administrator and newly created account passwords must be at least 12 characters. Five wrong logins lock that username for 60 s.
+* Passwords are salted PBKDF2-HMAC-SHA256 hashes; administrator and newly created account passwords must be 12-128 characters. Five wrong logins lock that username for 60 s.
 * Stock Out cannot exceed available stock; stock change + transaction + audit log are saved in one all-or-nothing database transaction with a row lock.
 * "Delete" is a soft delete – history keeps its product names. Stock levels can only change through Stock In/Out so the ledger always matches.
 * The last active Admin cannot be demoted or deactivated; nobody can deactivate or re-role themselves.

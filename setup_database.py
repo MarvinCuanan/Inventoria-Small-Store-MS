@@ -87,7 +87,7 @@ def create_admin_if_needed():
     if not Validator.is_valid_username(username):
         raise AppError("Username must be 3-30 characters: letters, numbers, dot or underscore.")
     full_name = input("Admin full name: ").strip()
-    password = getpass("Admin password (at least 12 characters): ")
+    password = getpass("Admin password (12-128 characters): ")
     confirmation = getpass("Confirm admin password: ")
     if password != confirmation:
         raise AppError("The passwords do not match.")

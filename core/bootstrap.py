@@ -1,8 +1,11 @@
 """Database bootstrap checks and explicit initial administrator creation."""
+import config
+
 from core.audit import AuditLogger
 from core.database import DatabaseManager
 from core.errors import AppError, ValidationError
 from core.security import hash_password
+from core.validator import Validator
 from repositories import RoleRepository, UserRepository
 
 
@@ -30,11 +33,16 @@ def ensure_admin_exists() -> None:
 
 def create_initial_admin(username: str, password: str, full_name: str) -> int:
     """Create the first administrator from credentials entered during setup."""
-    username, full_name = username.strip(), full_name.strip()
-    if not username or not full_name:
-        raise ValidationError("Administrator username and full name are required.")
-    if len(password) < 12:
-        raise ValidationError("Administrator password must be at least 12 characters.")
+    username = username.strip() if isinstance(username, str) else ""
+    full_name = full_name.strip() if isinstance(full_name, str) else ""
+    if not Validator.is_valid_username(username):
+        raise ValidationError("Username must be 3-30 characters: letters, numbers, dot or underscore.")
+    if not full_name or len(full_name) > 150:
+        raise ValidationError("Administrator full name must contain 1-150 characters.")
+    if not isinstance(password, str) or not config.MIN_PASSWORD_LENGTH <= len(password) <= config.MAX_PASSWORD_LENGTH:
+        raise ValidationError(
+            f"Administrator password must be {config.MIN_PASSWORD_LENGTH}-{config.MAX_PASSWORD_LENGTH} characters."
+        )
     roles, users = RoleRepository(), UserRepository()
     admin_role = roles.find_by_name("Admin")
     if admin_role is None:

@@ -4,6 +4,7 @@ import hmac
 import os
 
 _ITERATIONS = 200_000
+_MAX_VERIFY_ITERATIONS = 2_000_000
 
 
 def hash_password(password: str) -> str:
@@ -13,12 +14,19 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, stored: str) -> bool:
+    if not isinstance(password, str) or len(password) > 128:
+        return False
+    if not isinstance(stored, str) or len(stored) > 200:
+        return False
     try:
         scheme, iterations, salt_hex, digest_hex = stored.split("$")
         if scheme != "pbkdf2_sha256":
             return False
+        iteration_count = int(iterations)
+        if not _ITERATIONS <= iteration_count <= _MAX_VERIFY_ITERATIONS:
+            return False
         digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"),
-                                     bytes.fromhex(salt_hex), int(iterations))
+                                     bytes.fromhex(salt_hex), iteration_count)
         return hmac.compare_digest(digest.hex(), digest_hex)
     except (ValueError, AttributeError):
         return False
